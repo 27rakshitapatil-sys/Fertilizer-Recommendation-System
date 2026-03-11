@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Fertilizer Recommendation</title>
+</head>
+
+<body>
+
+<h2>Fertilizer Recommendation System</h2>
+
+<form action="/predict" method="post">
+
+Temperature:
+<input type="text" name="temperature"><br><br>
+
+Humidity:
+<input type="text" name="humidity"><br><br>
+
+Moisture:
+<input type="text" name="moisture"><br><br>
+
+Soil Type:
+<input type="text" name="soil"><br><br>
+
+Crop Type:
+<input type="text" name="crop"><br><br>
+
+Nitrogen:
+<input type="text" name="nitrogen"><br><br>
+
+Potassium:
+<input type="text" name="potassium"><br><br>
+
+Phosphorous:
+<input type="text" name="phosphorous"><br><br>
+
+<input type="submit" value="Predict">
+
+</form>
+
+<h3>{{ prediction_text }}</h3>
+
+</body>
+
+</html>
