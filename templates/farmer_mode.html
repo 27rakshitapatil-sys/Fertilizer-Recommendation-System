@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Farmer Mode | Fertilizer Recommendation System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0fdf4;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #166534, #16a34a);
+            color: white;
+            padding: 28px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #166534;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+            color: #166534;
+            margin-bottom: 10px;
+        }
+
+        .card-description {
+            color: #6b7280;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        select {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 15px;
+            background: white;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #16a34a;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #16a34a;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .submit-btn:hover {
+            background: #15803d;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+            border: 2px solid #22c55e;
+            border-radius: 18px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .result-title {
+            color: #166534;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .fertilizer-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #15803d;
+            margin-bottom: 15px;
+        }
+
+        .reason {
+            color: #374151;
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        .details {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #bbf7d0;
+            text-align: left;
+            line-height: 1.8;
+            color: #374151;
+        }
+
+        /* Graph */
+
+        .graph-box {
+            width: 100%;
+            margin-top: 25px;
+        }
+
+        .graph-row {
+            margin-bottom: 22px;
+        }
+
+        .graph-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 7px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .bar-background {
+            width: 100%;
+            height: 22px;
+            background: #e5e7eb;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            border-radius: 20px;
+        }
+
+        .crop-bar {
+            background: #22c55e;
+            width: 100%;
+        }
+
+        .soil-condition-bar {
+            background: #3b82f6;
+            width: 80%;
+        }
+
+        .soil-type-bar {
+            background: #f59e0b;
+            width: 65%;
+        }
+
+        .crop-type-bar {
+            background: #8b5cf6;
+            width: 65%;
+        }
+
+        .graph-note {
+            margin-top: 20px;
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 16px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        @media (max-width: 600px) {
+
+            .header h1 {
+                font-size: 25px;
+            }
+
+            .card {
+                padding: 22px;
+            }
+
+            .fertilizer-name {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <div class="header">
+
+        <h1>Farmer Mode</h1>
+
+        <p>Simple fertilizer guidance for farmers</p>
+
+    </div>
+
+
+    <div class="container">
+
+        <a href="/" class="back-btn">
+            ← Back to Advanced Mode
+        </a>
+
+
+        <!-- INPUT FORM -->
+
+        <div class="card">
+
+            <h2>Tell us about your field</h2>
+
+            <p class="card-description">
+                You don't need to know technical values such as nitrogen,
+                potassium, humidity or phosphorous. Just provide the information
+                you know about your crop and field.
+            </p>
+
+
+            <form method="POST" action="/farmer-predict">
+
+
+                <div class="form-group">
+
+                    <label for="crop">
+                        Which crop are you growing?
+                    </label>
+
+                    <select name="crop" id="crop" required>
+
+                        <option value="">
+                            Select your crop
+                        </option>
+
+                        {% for crop in crop_types %}
+
+                        <option value="{{ crop }}"
+                            {% if selected_crop == crop %}
+                                selected
+                            {% endif %}>
+
+                            {{ crop }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="soil">
+                        What type of soil do you have?
+                    </label>
+
+                    <select name="soil" id="soil" required>
+
+                        <option value="">
+                            Select your soil type
+                        </option>
+
+                        {% for soil in soil_types %}
+
+                        <option value="{{ soil }}"
+                            {% if selected_soil == soil %}
+                                selected
+                            {% endif %}>
+
+                            {{ soil }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="soil_condition">
+                        What is the current soil condition?
+                    </label>
+
+                    <select name="soil_condition"
+                            id="soil_condition"
+                            required>
+
+                        <option value="">
+                            Select soil condition
+                        </option>
+
+                        <option value="Dry"
+                            {% if selected_soil_condition == "Dry" %}
+                                selected
+                            {% endif %}>
+
+                            Dry
+
+                        </option>
+
+                        <option value="Normal"
+                            {% if selected_soil_condition == "Normal" %}
+                                selected
+                            {% endif %}>
+
+                            Normal
+
+                        </option>
+
+                        <option value="Wet"
+                            {% if selected_soil_condition == "Wet" %}
+                                selected
+                            {% endif %}>
+
+                            Wet
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="crop_condition">
+                        How does your crop look?
+                    </label>
+
+                    <select name="crop_condition"
+                            id="crop_condition"
+                            required>
+
+                        <option value="">
+                            Select crop condition
+                        </option>
+
+                        <option value="Healthy"
+                            {% if selected_crop_condition == "Healthy" %}
+                                selected
+                            {% endif %}>
+
+                            Healthy
+
+                        </option>
+
+                        <option value="Yellow Leaves"
+                            {% if selected_crop_condition == "Yellow Leaves" %}
+                                selected
+                            {% endif %}>
+
+                            Leaves turning yellow
+
+                        </option>
+
+                        <option value="Poor Growth"
+                            {% if selected_crop_condition == "Poor Growth" %}
+                                selected
+                            {% endif %}>
+
+                            Poor growth
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <button type="submit" class="submit-btn">
+
+                    Get Fertilizer Guidance
+
+                </button>
+
+
+            </form>
+
+        </div>
+
+
+
+        <!-- RESULT -->
+
+        {% if farmer_prediction %}
+
+        <div class="card">
+
+            <div class="result-card">
+
+                <div class="result-title">
+                    Fertilizer Guidance
+                </div>
+
+
+                <div class="fertilizer-name">
+                    {{ farmer_prediction }}
+                </div>
+
+
+                <p class="reason">
+                    {{ farmer_reason }}
+                </p>
+
+
+                <div class="details">
+
+                    <strong>Crop:</strong>
+                    {{ selected_crop }}
+
+                    <br>
+
+                    <strong>Soil:</strong>
+                    {{ selected_soil }}
+
+                    <br>
+
+                    <strong>Soil condition:</strong>
+                    {{ selected_soil_condition }}
+
+                    <br>
+
+                    <strong>Crop condition:</strong>
+                    {{ selected_crop_condition }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- FARMER GRAPH -->
+
+        <div class="card">
+
+            <h2>Field Information Overview</h2>
+
+            <p class="card-description">
+                A simple visual overview of the information provided about
+                your field.
+            </p>
+
+
+            <div class="graph-box">
+
+
+                <div class="graph-row">
+
+                    <div class="graph-label">
+
+                        <span>Crop Condition</span>
+
+                        <span>{{ selected_crop_condition }}</span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div class="bar crop-bar"></div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="graph-row">
+
+                    <div class="graph-label">
+
+                        <span>Soil Condition</span>
+
+                        <span>{{ selected_soil_condition }}</span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div class="bar soil-condition-bar"></div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="graph-row">
+
+                    <div class="graph-label">
+
+                        <span>Soil Type</span>
+
+                        <span>{{ selected_soil }}</span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div class="bar soil-type-bar"></div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="graph-row">
+
+                    <div class="graph-label">
+
+                        <span>Crop Type</span>
+
+                        <span>{{ selected_crop }}</span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div class="bar crop-type-bar"></div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <p class="graph-note">
+                This graph is a visual representation of the information
+                entered by the farmer. It is not a fertilizer confidence
+                score.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+
+
+        <!-- INFORMATION -->
+
+        <div class="card">
+
+            <h2>Important Information</h2>
+
+            <div class="info">
+
+                For more accurate fertilizer recommendations, a soil test can
+                provide important nutrient information such as Nitrogen (N),
+                Phosphorous (P) and Potassium (K).
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</body>
+
+</html>

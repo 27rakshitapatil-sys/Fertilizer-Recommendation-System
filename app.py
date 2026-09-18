@@ -28,6 +28,11 @@ feature_names = [
 
 @app.route("/")
 def home():
+    return render_template("mode_selection.html")
+
+
+@app.route("/advanced")
+def advanced_mode():
 
     # Get actual values stored inside the encoders
     soil_types = soil_encoder.classes_.tolist()
@@ -142,6 +147,54 @@ def predict():
             feature_importance=feature_importance
         )
 
+@app.route("/farmer")
+def farmer_mode():
+    soil_types = soil_encoder.classes_.tolist()
+    crop_types = crop_encoder.classes_.tolist()
+
+    return render_template(
+        "farmer_mode.html",
+        soil_types=soil_types,
+        crop_types=crop_types
+    )
+
+
+@app.route("/farmer-predict", methods=["POST"])
+def farmer_predict():
+    crop = request.form.get("crop")
+    soil = request.form.get("soil")
+    soil_condition = request.form.get("soil_condition")
+    crop_condition = request.form.get("crop_condition")
+
+    # Simple farmer-friendly guidance.
+    # This is separate from the existing ML model.
+    if crop_condition == "Yellow Leaves":
+        recommendation = "Urea"
+        reason = "Yellow leaves can indicate a need for nitrogen. A soil test is recommended before applying fertilizer."
+
+    elif crop_condition == "Poor Growth":
+        recommendation = "DAP"
+        reason = "Poor crop growth can be associated with nutrient deficiency. A soil test is recommended for accurate fertilizer selection."
+
+    elif soil_condition == "Dry":
+        recommendation = "DAP"
+        reason = "The soil is dry. Proper irrigation should be considered before fertilizer application."
+
+    else:
+        recommendation = "10-26-26"
+        reason = "For a healthy crop with normal soil conditions, balanced nutrient support may be suitable. A soil test gives a more accurate recommendation."
+
+    return render_template(
+        "farmer_mode.html",
+        soil_types=soil_encoder.classes_.tolist(),
+        crop_types=crop_encoder.classes_.tolist(),
+        farmer_prediction=recommendation,
+        farmer_reason=reason,
+        selected_crop=crop,
+        selected_soil=soil,
+        selected_soil_condition=soil_condition,
+        selected_crop_condition=crop_condition
+    )
 
 if __name__ == "__main__":
     app.run(debug=False)
