@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fertilizer Recommendation System</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f8f5;
+            color: #1f2937;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #166534, #15803d);
+            color: white;
+            padding: 32px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .intro {
+            margin-bottom: 25px;
+        }
+
+        .intro h2 {
+            font-size: 25px;
+            margin-bottom: 7px;
+        }
+
+        .intro p {
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: #14532d;
+        }
+
+        .card-subtitle {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 22px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 7px;
+            color: #374151;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 9px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.10);
+        }
+
+        .predict-button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #15803d;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .predict-button:hover {
+            background: #166534;
+            transform: translateY(-1px);
+        }
+
+        .result-card {
+            margin-top: 25px;
+            background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+            border: 1px solid #bbf7d0;
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: #166534;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-fertilizer {
+            font-size: 29px;
+            color: #14532d;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .confidence {
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+        .confidence strong {
+            color: #15803d;
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 13px;
+            border-radius: 9px;
+            margin-top: 18px;
+        }
+
+        .charts-section {
+            margin-top: 25px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 25px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 330px;
+            margin-top: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 18px;
+            border-radius: 12px;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #15803d;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        @media (max-width: 850px) {
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+    <div class="header-content">
+
+        <h1>🌱 Fertilizer Recommendation System</h1>
+
+        <p>
+            AI-powered fertilizer recommendations based on soil,
+            crop and nutrient conditions.
+        </p>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+    <div class="intro">
+
+        <h2>Smart Agricultural Analysis</h2>
+
+        <p>
+            Enter the soil, crop and nutrient information to receive
+            a fertilizer recommendation.
+        </p>
+
+    </div>
+
+
+
+    <div class="main-grid">
+
+
+        <!-- INPUT CARD -->
+
+        <div class="card">
+
+            <h3 class="card-title">
+                Crop & Soil Information
+            </h3>
+
+            <p class="card-subtitle">
+                Enter the environmental and nutrient values.
+            </p>
+
+
+            <form action="/predict" method="post">
+
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label for="temperature">
+                            Temperature
+                        </label>
+
+                        <input
+                            type="number"
+                            step="any"
+                            id="temperature"
+                            name="temperature"
+                            placeholder="e.g. 25"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="humidity">
+                            Humidity
+                        </label>
+
+                        <input
+                            type="number"
+                            step="any"
+                            id="humidity"
+                            name="humidity"
+                            placeholder="e.g. 60"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="moisture">
+                            Moisture
+                        </label>
+
+                        <input
+                            type="number"
+                            step="any"
+                            id="moisture"
+                            name="moisture"
+                            placeholder="e.g. 40"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="soil">
+                            Soil Type
+                        </label>
+
+                        <select
+                            id="soil"
+                            name="soil"
+                            required
+                        >
+
+                            <option value="">
+                                Select soil type
+                            </option>
+
+
+                            {% for soil in soil_types %}
+
+                            <option
+                                value="{{ soil }}"
+                                {% if selected_soil == soil %}selected{% endif %}
+                            >
+                                {{ soil }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="crop">
+                            Crop Type
+                        </label>
+
+
+                        <select
+                            id="crop"
+                            name="crop"
+                            required
+                        >
+
+                            <option value="">
+                                Select crop type
+                            </option>
+
+
+                            {% for crop in crop_types %}
+
+                            <option
+                                value="{{ crop }}"
+                                {% if selected_crop == crop %}selected{% endif %}
+                            >
+                                {{ crop }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="nitrogen">
+                            Nitrogen (N)
+                        </label>
+
+                        <input
+                            type="number"
+                            step="any"
+                            id="nitrogen"
+                            name="nitrogen"
+                            placeholder="e.g. 50"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="potassium">
+                            Potassium (K)
+                        </label>
+
+                        <input
+                            type="number"
+                            step="any"
+                            id="potassium"
+                            name="potassium"
+                            placeholder="e.g. 30"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="phosphorous">
+                            Phosphorous (P)
+                        </label>
+
+                        <input
+                            type="number"
+                            step="any"
+                            id="phosphorous"
+                            name="phosphorous"
+                            placeholder="e.g. 40"
+                            required
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="predict-button"
+                >
+                    🔍 Predict Fertilizer
+                </button>
+
+
+            </form>
+
+
+            {% if error_message %}
+
+            <div class="error">
+                {{ error_message }}
+            </div>
+
+            {% endif %}
+
+
+        </div>
+
+
+
+        <!-- MODEL OVERVIEW -->
+
+        <div class="card">
+
+            <h3 class="card-title">
+                Model Overview
+            </h3>
+
+            <p class="card-subtitle">
+                Information about the trained machine learning model.
+            </p>
+
+
+            <div class="stats">
+
+
+                <div class="stat-box">
+
+                    <div class="stat-number">
+                        8
+                    </div>
+
+                    <div class="stat-label">
+                        Input Features
+                    </div>
+
+                </div>
+
+
+
+                <div class="stat-box">
+
+                    <div class="stat-number">
+                        RF
+                    </div>
+
+                    <div class="stat-label">
+                        Random Forest
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div style="margin-top:25px;">
+
+                <h4 style="margin-bottom:10px;">
+                    How it works
+                </h4>
+
+
+                <p
+                    style="
+                    font-size:14px;
+                    line-height:1.7;
+                    color:#6b7280;
+                    "
+                >
+
+                    The system analyzes temperature, humidity, moisture,
+                    soil type, crop type and NPK nutrient values.
+                    These values are processed by the trained machine
+                    learning model to recommend a suitable fertilizer.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- RESULT CARD -->
+
+    {% if prediction_text %}
+
+    <div class="result-card">
+
+        <div class="result-label">
+            Recommended Fertilizer
+        </div>
+
+
+        <div class="result-fertilizer">
+
+            🌾 {{ prediction_text }}
+
+        </div>
+
+
+        <div class="confidence">
+
+            Model prediction confidence:
+
+            <strong>
+                {{ confidence }}%
+            </strong>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- GRAPHS -->
+
+    <section class="charts-section">
+
+
+        <!-- FEATURE IMPORTANCE -->
+
+        <div class="chart-card">
+
+            <h3 class="card-title">
+                📊 Model Feature Importance
+            </h3>
+
+
+            <p class="card-subtitle">
+
+                Relative contribution of each feature to the
+                Random Forest model.
+
+            </p>
+
+
+            <div class="chart-container">
+
+                <canvas id="featureChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- PREDICTION PROBABILITY -->
+
+        {% if probability_data %}
+
+        <div class="chart-card">
+
+            <h3 class="card-title">
+                🎯 Prediction Probability
+            </h3>
+
+
+            <p class="card-subtitle">
+
+                Probability distribution for the current prediction.
+
+            </p>
+
+
+            <div class="chart-container">
+
+                <canvas id="probabilityChart"></canvas>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+    </section>
+
+
+</main>
+
+
+
+<footer>
+
+    Fertilizer Recommendation System • Machine Learning Project
+
+</footer>
+
+
+
+<script>
+
+
+/* ============================================
+   FEATURE IMPORTANCE GRAPH
+   ============================================ */
+
+
+const featureNames =
+    {{ feature_names | tojson }};
+
+
+const featureImportance =
+    {{ feature_importance | tojson }};
+
+
+
+new Chart(
+    document.getElementById("featureChart"),
+    {
+
+        type: "bar",
+
+
+        data: {
+
+            labels: featureNames,
+
+
+            datasets: [
+
+                {
+
+                    label: "Importance (%)",
+
+
+                    data: featureImportance.map(
+                        value => (value * 100).toFixed(2)
+                    ),
+
+
+                    /*
+                     * Different color for every bar
+                     */
+
+                    backgroundColor: [
+
+                        "#16a34a",
+                        "#2563eb",
+                        "#f59e0b",
+                        "#ef4444",
+                        "#8b5cf6",
+                        "#06b6d4",
+                        "#ec4899",
+                        "#84cc16"
+
+                    ],
+
+
+                    borderColor: [
+
+                        "#15803d",
+                        "#1d4ed8",
+                        "#d97706",
+                        "#dc2626",
+                        "#7c3aed",
+                        "#0891b2",
+                        "#db2777",
+                        "#65a30d"
+
+                    ],
+
+
+                    borderWidth: 1
+
+                }
+
+            ]
+
+        },
+
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+
+            indexAxis: "y",
+
+
+            plugins: {
+
+                legend: {
+
+                    display: false
+
+                }
+
+            },
+
+
+            scales: {
+
+                x: {
+
+                    beginAtZero: true,
+
+
+                    title: {
+
+                        display: true,
+
+                        text: "Importance (%)"
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+);
+
+
+
+/* ============================================
+   PREDICTION PROBABILITY GRAPH
+   ============================================ */
+
+
+{% if probability_data %}
+
+
+const probabilityNames =
+    {{ probability_data | map(attribute="name") | list | tojson }};
+
+
+const probabilityValues =
+    {{ probability_data | map(attribute="probability") | list | tojson }};
+
+
+
+new Chart(
+    document.getElementById("probabilityChart"),
+    {
+
+        type: "bar",
+
+
+        data: {
+
+            labels: probabilityNames,
+
+
+            datasets: [
+
+                {
+
+                    label: "Probability (%)",
+
+
+                    data: probabilityValues,
+
+
+                    /*
+                     * Different color for every fertilizer
+                     */
+
+                    backgroundColor: [
+
+                        "#16a34a",
+                        "#2563eb",
+                        "#f59e0b",
+                        "#ef4444",
+                        "#8b5cf6",
+                        "#06b6d4",
+                        "#ec4899",
+                        "#f97316",
+                        "#14b8a6",
+                        "#6366f1"
+
+                    ],
+
+
+                    borderColor: [
+
+                        "#15803d",
+                        "#1d4ed8",
+                        "#d97706",
+                        "#dc2626",
+                        "#7c3aed",
+                        "#0891b2",
+                        "#db2777",
+                        "#ea580c",
+                        "#0f766e",
+                        "#4f46e5"
+
+                    ],
+
+
+                    borderWidth: 1
+
+                }
+
+            ]
+
+        },
+
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+
+            plugins: {
+
+                legend: {
+
+                    display: false
+
+                }
+
+            },
+
+
+            scales: {
+
+                y: {
+
+                    beginAtZero: true,
+
+                    max: 100,
+
+
+                    title: {
+
+                        display: true,
+
+                        text: "Probability (%)"
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+);
+
+
+{% endif %}
+
+
+</script>
+
+
+</body>
+
+</html>
